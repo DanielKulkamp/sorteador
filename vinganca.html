@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sorteador de Peão</title>
+  <style>
+    .tab {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .sorteando {
+      font-size: xx-large;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sorteador de Peão</h1>
+  
+  <button id="sortear">Sortear</button>
+  <button id="inscrever-tab-button">Inscrições</button>
+
+  <div class="tab" id="sortear-tab">
+    <div id="nameDisplay" class="sorteando"></div>
+  </div>
+
+  <div class="tab" id="inscrever-tab">
+    <textarea id="newNames" placeholder="Enter names, one per line"></textarea>
+    <button id="inscrever">Inscrição</button>
+  </div>
+
+  <script>
+    const nameDisplay = document.getElementById("nameDisplay");
+    const sortearButton = document.getElementById("sortear");
+    const inscreverTabButton = document.getElementById("inscrever-tab-button");
+    const sortearTab = document.getElementById("sortear-tab");
+    const inscreverTab = document.getElementById("inscrever-tab");
+    const newNamesInput = document.getElementById("newNames");
+    const inscreverButton = document.getElementById("inscrever");
+    const peao = new Audio('./peao_cut.mp3');
+    let names = [];
+
+    sortearButton.addEventListener("click", startDrawing);
+    inscreverTabButton.addEventListener("click", openTab.bind(null, 'inscrever-tab'));
+    inscreverButton.addEventListener("click", addNames);
+    let playing = false;
+    async function startDrawing() {
+      sortearButton.removeEventListener("click", startDrawing);
+      if(!playing){
+        peao.play();
+        playing = true;
+      }
+      sortearTab.style.display = "block";
+      
+
+      const lastDrawIndex = names.length - 1;
+      let displayDuration = 100; // Initial display duration in milliseconds
+      let totalTime = 0;
+      let timerId;
+      let timerSecondsId;
+      let increment = 100 ;
+      function drawRandomName() {
+        //console.log(`displayDuration = ${displayDuration}`);
+        const randomIndex = Math.floor(Math.random() * names.length);
+        const name = names[randomIndex];
+	nameDisplay.textContent = name;
+
+        clearTimeout(timerId);
+        timerId = setTimeout(drawRandomName, displayDuration);
+        totalTime += displayDuration;
+        displayDuration = totalTime/20000.0 *1000;
+        if (totalTime >= 9000){
+          clearTimeout(timerId);
+          sortearButton.addEventListener("click", startDrawing);
+	  names.splice(randomIndex, 1);
+          nameDisplay.textContent = "Sorteado: "+name;
+          //peao.pause();
+          //peao.currentTime = 0;
+          playing = false;
+          sortearButton.disabled = false;
+          inscreverTabButton.disabled = false;
+        }
+      }
+
+      drawRandomName();
+    }
+
+    function openTab(tabId) {
+      sortearTab.classList.remove("active");
+      inscreverTab.classList.remove("active");
+      document.getElementById(tabId).classList.add("active");
+    }
+
+    function addNames() {
+      const newNamesText = newNamesInput.value.trim();
+      if (newNamesText !== "") {
+        const newNamesArray = newNamesText.split("\n").map(name => name.trim()).filter(name => name !== "");
+        names = names.concat(newNamesArray);
+        newNamesInput.value = "";
+      }
+      inscreverTab.classList.remove("active");
+      //inscreverTab.classList.add("tab");
+    }
+  </script>
+</body>
+</html>
